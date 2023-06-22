@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alice no País das Maravilhas</title>
+  <style>
+    body {
+      background: linear-gradient(45deg, #FF00FF, #00FFFF, #FF0000);
+      background-size: 400% 400%;
+      animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    canvas {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .menu {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+    }
+
+    .menu-item {
+      position: relative;
+      padding: 10px 20px;
+      margin: 0 10px;
+      color: #fff;
+      font-size: 20px;
+      text-decoration: none;
+      transition: transform 0.3s ease;
+    }
+
+    .menu-item::after {
+      content: attr(data-value);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .menu-item:hover {
+      transform: scale(1.1);
+    }
+
+    .menu-item:hover::after {
+      opacity: 1;
+    }
+
+    .ink-effect {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1; /* Define um valor de z-index para colocar a tinta em cima da logo */
+    }
+
+    .ink-effect::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 20%, transparent 50%);
+      animation: inkAnimation 5s linear infinite;
+    }
+
+    @keyframes inkAnimation {
+      0% {
+        transform: translateX(-50%) translateY(-150%);
+      }
+
+      100% {
+        transform: translateX(-50%) translateY(150%);
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      /* Estilos para telas com largura máxima de 768px */
+      body {
+        background-size: 200% 200%;
+      }
+
+      .menu {
+        flex-direction: column;
+        bottom: 10px;
+      }
+
+      .menu-item {
+        margin: 10px 0;
+      }
+
+      /* Estilos para o menu hambúrguer */
+      .hamburger-menu {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        position: relative;
+        z-index: 2;
+      }
+
+      .hamburger-menu .bar {
+        width: 100%;
+        height: 4px;
+        background-color: #fff;
+        margin: 2px 0;
+        transition: transform 0.3s ease;
+      }
+
+      .menu-open .bar:nth-child(1) {
+        transform: translateY(6px) rotate(-45deg);
+      }
+
+      .menu-open .bar:nth-child(2) {
+        opacity: 0;
+      }
+
+      .menu-open .bar:nth-child(3) {
+        transform: translateY(-6px) rotate(45deg);
+      }
+
+      /* Estilos para os itens do menu em cascata */
+      .menu-item-sub {
+        display: none;
+        position: relative;
+        top: -30px;
+        opacity: 0;
+        transition: top 0.3s ease, opacity 0.3s ease;
+      }
+
+      .menu-open .menu-item-sub {
+        display: block;
+        top: 0;
+        opacity: 1;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+  <p style="text-align: center; color: #FFFFFF;">"Quanto tempo dura o eterno?" - Alice perguntou ao Coelho Branco.<br>
+    "Às vezes, apenas um segundo." - Respondeu o Coelho Branco.</p>
+
+  <div class="menu">
+    <a class="menu-item" href="#" data-value="Trippy">Trippy</a>
+    <a class="menu-item" href="#" data-value="Groovy">Groovy</a>
+    <a class="menu-item" href="#" data-value="Mind-bending">Mind-bending</a>
+    <a class="menu-item" href="#" data-value="Freaky">Freaky</a>
+  </div>
+
+  <div class="ink-effect"></div>
+
+  <script>
+const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const shapes = [];
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function createShape() {
+      const size = Math.random() * 30 + 20;
+      const x = Math.random() * (canvas.width - size);
+      const y = Math.random() * (canvas.height - size);
+      const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.8)`;
+      const dx = (Math.random() - 0.5) * 5;
+      const dy = (Math.random() - 0.5) * 5;
+
+      const shape = {
+        x,
+        y,
+        size,
+        color,
+        dx,
+        dy,
+      };
+
+      shapes.push(shape);
+    }
+
+    function drawIcosahedron(x, y, size, color) {
+      const angle = (Math.PI * 2) / 20;
+
+      ctx.beginPath();
+      ctx.moveTo(x + size * Math.cos(0), y + size * Math.sin(0));
+
+      for (let i = 1; i <= 20; i++) {
+        const theta = i * angle;
+        const xPos = x + size * Math.cos(theta);
+        const yPos = y + size * Math.sin(theta);
+        ctx.lineTo(xPos, yPos);
+      }
+
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      shapes.forEach((shape) => {
+        shape.x += shape.dx;
+        shape.y += shape.dy;
+
+        if (shape.x < 0 || shape.x + shape.size > canvas.width) {
+          shape.dx *= -1;
+        }
+
+        if (shape.y < 0 || shape.y + shape.size > canvas.height) {
+          shape.dy *= -1;
+        }
+
+        drawIcosahedron(shape.x, shape.y, shape.size, shape.color);
+      });
+
+      requestAnimationFrame(update);
+    }
+
+    setInterval(createShape, 1000);
+    update();
+
+    const inkEffect = document.querySelector('.ink-effect');
+    inkEffect.style.width = window.innerWidth + 'px';
+    inkEffect.style.height = window.innerHeight + 'px';
+
+    const canvas2 = document.createElement('canvas');
+    const ctx2 = canvas2.getContext('2d');
+    const logoSize = 400;
+    const colors = ['#FF00FF', '#00FFFF', '#FF0000', '#FFFF00'];
+    let currentLogoColorIndex = 0;
+
+    canvas2.width = window.innerWidth;
+    canvas2.height = window.innerHeight;
+    canvas2.style.position = 'absolute';
+    canvas2.style.top = '50%';
+    canvas2.style.left = '50%';
+    canvas2.style.transform = 'translate(-50%, -50%)';
+
+    function drawLogo() {
+      const centerX = canvas2.width / 2;
+      const centerY = canvas2.height / 2;
+
+      ctx2.fillStyle = colors[currentLogoColorIndex];
+
+            // Draw "D"
+            ctx2.font = `${logoSize / 2}px Arial`;
+      ctx2.fillText("D", centerX - logoSize / 2, centerY - logoSize / 4);
+
+      // Draw "E"
+      ctx2.font = `${logoSize / 4}px Arial`;
+      ctx2.fillText("E", centerX + logoSize / 8, centerY - logoSize / 8);
+
+      // Draw "S"
+      ctx2.font = `${logoSize / 2}px Arial`;
+      ctx2.fillText("S", centerX - logoSize / 2, centerY + logoSize / 8);
+
+      // Draw "I"
+      ctx2.font = `${logoSize / 4}px Arial`;
+      ctx2.fillText("I", centerX, centerY + logoSize / 4);
+
+      // Draw "R"
+      ctx2.font = `${logoSize / 2}px Arial`;
+      ctx2.fillText("R", centerX + logoSize / 4, centerY - logoSize / 8);
+
+      // Draw "A"
+      ctx2.font = `${logoSize / 4}px Arial`;
+      ctx2.fillText("A", centerX - logoSize / 4, centerY - logoSize / 8);
+
+      // Draw "H"
+      ctx2.font = `${logoSize / 4}px Arial`;
+      ctx2.fillText("H", centerX - logoSize / 4, centerY + logoSize / 8);
+
+      document.body.appendChild(canvas2);
+    }
+
+    function changeLogoColor() {
+      currentLogoColorIndex = (currentLogoColorIndex + 1) % colors.length;
+      ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+      drawLogo();
+    }
+
+    drawLogo();
+    setInterval(changeLogoColor, 1500);
+
+    const menuItems = document.querySelectorAll('.menu-item');
+
+    function handleMenuItemClick(e) {
+      const inkElement = document.createElement('div');
+      inkElement.classList.add('ink-effect');
+      inkElement.style.background = colors[currentLogoColorIndex];
+      inkElement.style.left = `${e.clientX}px`;
+      inkElement.style.top = `${e.clientY}px`;
+      document.body.appendChild(inkElement);
+
+      setTimeout(() => {
+        inkElement.remove();
+      }, 1000);
+    }
+
+    menuItems.forEach((item) => {
+      item.addEventListener('click', handleMenuItemClick);
+    });
+  </script>
+  
+</body>
+</html>
